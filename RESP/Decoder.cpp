@@ -5,6 +5,7 @@
 #include "Decoder.h"
 #include <map>
 #include <utility>
+#include <sstream>
 
 std::map<char, DataType> TypeMap =
 {
@@ -17,7 +18,7 @@ std::map<char, DataType> TypeMap =
 
 
 Decoder::Decoder(const char* data)
-:data_(data), pos_()
+:data_(data), pos_(), error_()
 {
 }
 
@@ -36,16 +37,74 @@ DataType Decoder::peek_next()
 
 long long Decoder::read_int()
 {
-    if(data_[pos_] != ':')
+    if(!error_.can_read())
         return 0;
+    if(data_[pos_] != ':') {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::WrongType;
+        return 0;
+    }
 
     ++pos_;
     long long result = 0;
     while (data_[pos_] != '\r' && data_.size() > pos_)
     {
         result *= 10;
+        if(data_[pos_] < '0' || data_[pos_] > '9')
+        {
+            error_.position = pos_;
+            error_.type = DecoderErrorType::FormatError;
+            return 0;
+        }
         result += data_[pos_++] & 0x0F;
+    }
+    if(data_.size() == pos_)
+    {
+        error_.type = DecoderErrorType::FormatError;
+        error_.position = pos_;
+        return 0;
+    }
+    ++pos_;
+    if(data_[pos_] != '\n')
+    {
+        error_.type = DecoderErrorType::FormatError;
+        error_.position = pos_;
+        return 0;
     }
     ++pos_;
     return result;
+}
+
+std::string Decoder::read_simple_string()
+{
+    if(!error_.can_read())
+        return "";
+    if(data_[pos_] != '+')
+    {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::WrongType;
+        return "";
+    }
+
+    ++pos_;
+    std::stringstream string_data;
+    while (data_[pos_] != '\r' && data_.size() > pos_)
+    {
+        string_data << data_[pos_++];
+    }
+    if(data_.size() == pos_)
+    {
+        error_.type = DecoderErrorType::FormatError;
+        error_.position = pos_;
+        return "";
+    }
+    ++pos_;
+    if(data_[pos_] != '\n')
+    {
+        error_.type = DecoderErrorType::FormatError;
+        error_.position = pos_;
+        return "";
+    }
+    ++pos_;
+    return string_data.str();
 }
