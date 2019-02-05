@@ -11,7 +11,7 @@ TEST(RESP_test, encode_int)
 {
     auto expected = std::string(":123\r\n");
     auto e = Encoder();
-    e.write(123);
+    e.write_int(123);
     auto result = e.to_string();
 
     EXPECT_EQ(expected, result);
@@ -187,3 +187,117 @@ TEST(RESP_test, decode_simple_string_error)
     EXPECT_FALSE(error.can_read());
 }
 
+TEST(RESP_test, decode_error)
+{
+    auto d = Decoder("-Some error\r\n");
+    auto type = d.peek_next();
+
+    EXPECT_EQ(DataType::Error, type);
+
+    auto expected = "Some error";
+    auto str = d.read_error();
+
+    EXPECT_EQ(expected, str);
+}
+
+TEST(RESP_test, decode_error_parse_error)
+{
+    auto d = Decoder(":Some error\r\n");
+    auto result = d.read_error();
+    auto error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(0, error.position);
+    EXPECT_TRUE(error.can_read());
+
+    d = Decoder("-Some error\r");
+    result = d.read_error();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(12, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("-Some error");
+    result = d.read_error();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(11, error.position);
+    EXPECT_FALSE(error.can_read());
+}
+
+TEST(RESP_test, decode_bulk_string)
+{
+    auto d = Decoder("$12\r\nBulk\r\nstring\r\n");
+    auto type = d.peek_next();
+
+    EXPECT_EQ(DataType::BulkString, type);
+
+    auto expected = "Bulk\r\nstring";
+    int size;
+    auto ptr = d.read_bulk_string(size);
+    auto str = std::string(ptr.get(), size);
+
+    EXPECT_EQ(expected, str);
+
+    d = Decoder("$-1\r\n");
+    ptr = d.read_bulk_string(size);
+
+    EXPECT_EQ(nullptr, ptr.get());
+
+    d = Decoder("$0\r\n\r\n");
+    ptr = d.read_bulk_string(size);
+
+    EXPECT_EQ(0, size);
+    EXPECT_EQ(0, memcmp("", ptr.get(), 0));
+}
+
+TEST(RESP_test, decode_bulk_string_error)
+{
+    auto d = Decoder("+String\r\n");
+    int size;
+    auto result = d.read_bulk_string(size);
+    auto error = d.get_error();
+
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(0, error.position);
+    EXPECT_TRUE(error.can_read());
+
+    d = Decoder("$String\r\n");
+    result = d.read_bulk_string(size);
+    error = d.get_error();
+
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("$\r\n");
+    result = d.read_bulk_string(size);
+    error = d.get_error();
+
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("$12\r\n");
+    result = d.read_bulk_string(size);
+    error = d.get_error();
+
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(5, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("$12\r\nBulk\r\n");
+    result = d.read_bulk_string(size);
+    error = d.get_error();
+
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(11, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("$12\r\nBulk\r\nstring");
+    result = d.read_bulk_string(size);
+    error = d.get_error();
+
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(17, error.position);
+    EXPECT_FALSE(error.can_read());
+}

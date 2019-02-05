@@ -10,7 +10,7 @@ Encoder::Encoder()
 {
 }
 
-void Encoder::write(int num)
+void Encoder::write_int(int num)
 {
     auto std_str = std::to_string(num);
     auto str = std_str.c_str();

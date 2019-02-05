@@ -12,7 +12,7 @@ class Encoder
 {
 public:
     Encoder();
-    void write(int num);
+    void write_int(int num);
     void write_bulk_string(const char* str, int len);
     void write_simple_string(const char* str);
     void write_error(const char* error_msg);

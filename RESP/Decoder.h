@@ -5,6 +5,7 @@
 #ifndef REDVID_DECODER_H
 #define REDVID_DECODER_H
 #include <string>
+#include <memory>
 
 enum class DataType
 {
@@ -36,10 +37,16 @@ class Decoder
 {
 public:
     Decoder(const char* data);
+    Decoder(const char* data, size_t len);
     DataType peek_next();
     long long read_int();
     std::string read_simple_string();
+    std::string read_error();
+    std::shared_ptr<char> read_bulk_string(int& size);
     DecoderError get_error() const { return error_; }
+
+private:
+    bool read_endl();
 
 private:
     std::string data_;
