@@ -148,6 +148,20 @@ TEST(RESP_test, decode_int_error)
     EXPECT_TRUE(error.has_error());
     EXPECT_EQ(4, error.position);
     EXPECT_FALSE(error.can_read());
+
+    d = Decoder(":");
+    result = d.read_int();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder(":\r\n");
+    result = d.read_int();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
+    EXPECT_FALSE(error.can_read());
 }
 
 TEST(RESP_test, decode_simple_string)
@@ -299,5 +313,54 @@ TEST(RESP_test, decode_bulk_string_error)
 
     EXPECT_TRUE(error.has_error());
     EXPECT_EQ(17, error.position);
+    EXPECT_FALSE(error.can_read());
+}
+
+TEST(RESP_test, decode_array_size)
+{
+    auto d = Decoder("*3\r\n:1\r\n:2\r\n:3\r\n");
+    auto type = d.peek_next();
+    EXPECT_EQ(DataType::Array, type);
+
+    auto expected = 3;
+    auto array_size = d.read_array_size();
+    EXPECT_EQ(expected, array_size);
+}
+
+TEST(RESP_test, decode_array_size_error)
+{
+    auto d = Decoder(":3\r\n");
+    auto result = d.read_array_size();
+    auto error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(0, error.position);
+    EXPECT_TRUE(error.can_read());
+
+    d = Decoder("*");
+    result = d.read_array_size();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("*\r\n");
+    result = d.read_array_size();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("*3");
+    result = d.read_array_size();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(2, error.position);
+    EXPECT_FALSE(error.can_read());
+
+    d = Decoder("*\r\n");
+    result = d.read_array_size();
+    error = d.get_error();
+    EXPECT_TRUE(error.has_error());
+    EXPECT_EQ(1, error.position);
     EXPECT_FALSE(error.can_read());
 }

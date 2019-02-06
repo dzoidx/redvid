@@ -43,6 +43,7 @@ public:
     std::string read_simple_string();
     std::string read_error();
     std::shared_ptr<char> read_bulk_string(int& size);
+    int read_array_size();
     DecoderError get_error() const { return error_; }
 
 private:

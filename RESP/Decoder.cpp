@@ -68,7 +68,14 @@ long long Decoder::read_int()
     }
 
     ++pos_;
+    if(data_.size() < pos_)
+    {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::FormatError;
+        return 0;
+    }
     long long result = 0;
+    int size = 0;
     while (data_.size() > pos_ && data_[pos_] != '\r')
     {
         result *= 10;
@@ -79,6 +86,13 @@ long long Decoder::read_int()
             return 0;
         }
         result += data_[pos_++] & 0x0F;
+        ++size;
+    }
+    if(size < 1)
+    {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::FormatError;
+        return 0;
     }
     if(!read_endl())
         return 0;
@@ -196,5 +210,47 @@ std::shared_ptr<char> Decoder::read_bulk_string(int& size)
 
     if(!read_endl())
         return std::shared_ptr<char>(new char[0]);
+    return result;
+}
+
+int Decoder::read_array_size()
+{
+    if(!error_.can_read())
+        return 0;
+    if(data_[pos_] != '*') {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::WrongType;
+        return 0;
+    }
+
+    ++pos_;
+    if(data_.size() < pos_)
+    {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::FormatError;
+        return 0;
+    }
+    int result = 0;
+    int size = 0;
+    while (data_.size() > pos_ && data_[pos_] != '\r')
+    {
+        result *= 10;
+        if(data_[pos_] < '0' || data_[pos_] > '9')
+        {
+            error_.position = pos_;
+            error_.type = DecoderErrorType::FormatError;
+            return 0;
+        }
+        result += data_[pos_++] & 0x0F;
+        ++size;
+    }
+    if(size < 1)
+    {
+        error_.position = pos_;
+        error_.type = DecoderErrorType::FormatError;
+        return 0;
+    }
+    if(!read_endl())
+        return 0;
     return result;
 }
