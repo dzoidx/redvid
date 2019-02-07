@@ -37,7 +37,9 @@ add_library(redvid_core RESP/Encoder.cpp RESP/Encoder.h RESP/Decoder.h RESP/Deco
 set(SOURCE_FILES main.cpp)
 add_executable(redvid ${SOURCE_FILES})
 target_link_libraries(redvid redvid_core)
-target_link_libraries(redvid Ws2_32)
+if (WIN32)
+    target_link_libraries(redvid Ws2_32)
+endif()
 
 file(GLOB TEST_SRC_FILES test/*.cpp)
 add_executable(redvid_test ${TEST_SRC_FILES})
