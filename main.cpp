@@ -34,6 +34,7 @@ int main()
     auto str_raw = d.read_bulk_string(str_size);
     auto str = std::string(str_raw.get(), str_size);
     std::cout << str << std::endl;
+    net_close(h);
     net_deinit();
     return 0;
 }
