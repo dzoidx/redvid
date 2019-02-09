@@ -25,6 +25,14 @@ TEST(redis_version_test, positive_cases)
     s_v = RedisVersion(1, 0, 3);
     EXPECT_GT(s_v, f_v);
     EXPECT_LT(f_v, s_v);
+
+    f_v = RedisVersion("2.0");
+    s_v = RedisVersion("10.0");
+    EXPECT_LT(f_v, s_v);
+
+    f_v = RedisVersion(2,28,0);
+    s_v = RedisVersion(2,3,0);
+    EXPECT_GT(f_v, s_v);
 }
 
 TEST(redis_version_test, negative_cases)
