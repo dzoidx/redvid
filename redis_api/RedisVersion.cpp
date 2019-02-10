@@ -23,7 +23,7 @@ RedisVersion::RedisVersion(std::string version)
 
     if(minor_dot != std::string::npos)
     {
-        auto s = version.substr(pos, minor_dot);
+        auto s = version.substr(pos, minor_dot - pos);
         minor = atoi(s.c_str());
         pos = minor_dot + 1;
     }

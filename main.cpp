@@ -10,7 +10,6 @@
 int main()
 {
     net_init();
-
     auto redis = RedisClient("localhost", 6379);
 
     auto e = Encoder();

@@ -26,6 +26,7 @@ Info RedisClient::info()
     auto resp = request(e, host_.c_str(), port_);
     auto d = Decoder(resp.c_str());
     auto info = Info(d);
+    return info;
 }
 
 std::string request(Encoder& encoded_data, const char* host, int port)
