@@ -10,6 +10,7 @@
 class RedisVersion
 {
 public:
+    RedisVersion() :RedisVersion(0) {}
     RedisVersion(std::string version);
     constexpr RedisVersion(unsigned major, unsigned minor = 0, unsigned revision = 0):version_{} { init(major, minor, revision); }
 

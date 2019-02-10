@@ -32,7 +32,7 @@ project(redvid)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(redvid_core RESP/Encoder.cpp RESP/Encoder.h RESP/Decoder.h RESP/Decoder.cpp net/net.h net/net.cpp redis_api/RedisVersion.h redis_api/RedisVersion.cpp redis_api/ApiVersions.cpp)
+add_library(redvid_core RESP/Encoder.cpp RESP/Encoder.h RESP/Decoder.h RESP/Decoder.cpp net/net.h net/net.cpp redis_api/RedisVersion.h redis_api/RedisVersion.cpp redis_api/ApiVersions.cpp redis_api/ApiVersions.h redis_api/RedisClient.cpp redis_api/RedisClient.h redis_api/Info.cpp redis_api/Info.h)
 
 set(SOURCE_FILES main.cpp)
 add_executable(redvid ${SOURCE_FILES})

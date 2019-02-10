@@ -2,6 +2,7 @@
 #include "net/net.h"
 #include "RESP/Encoder.h"
 #include "RESP/Decoder.h"
+#include "redis_api/RedisClient.h"
 #include <memory>
 #include <string>
 #pragma comment(lib, "Ws2_32.lib")
@@ -9,6 +10,8 @@
 int main()
 {
     net_init();
+
+    auto redis = RedisClient("localhost", 6379);
 
     auto e = Encoder();
     e.write_array(1);
