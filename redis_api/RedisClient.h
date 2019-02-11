@@ -15,6 +15,7 @@ public:
     RedisClient(const char* host, int port);
     RedisVersion get_version();
     Info info();
+    bool select(int db_index);
 private:
     RedisVersion version_;
     std::string host_;
