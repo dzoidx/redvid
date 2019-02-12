@@ -42,6 +42,6 @@ if (WIN32)
 endif()
 
 file(GLOB TEST_SRC_FILES test/*.cpp)
-add_executable(redvid_test ${TEST_SRC_FILES})
+add_executable(redvid_test ${TEST_SRC_FILES} test/redis_info_test.cpp)
 target_link_libraries(redvid_test gtest_main redvid_core)
 add_test(NAME redvid_test COMMAND example)
