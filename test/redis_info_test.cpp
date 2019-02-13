@@ -22,4 +22,7 @@ TEST(redis_info_test, positive_cases)
     sect = info.get("Options");
     EXPECT_EQ("1000", sect.get("timeout"));
     EXPECT_EQ("", sect.get("version"));
+
+    sect = info.get("Not existing");
+    EXPECT_EQ("", sect.get("timeout"));
 }

@@ -11,8 +11,11 @@ int main()
 {
     net_init();
     auto redis = RedisClient("localhost", 6379);
-    if(redis.select(1))
-        std::cout << "db 1 selected" << std::endl;
+    auto keys = redis.keys("*");
+    for(auto i = 0; i < keys.size(); ++i)
+    {
+        std::cout << keys[i] << std::endl;
+    }
 
     auto e = Encoder();
     e.write_array(1);

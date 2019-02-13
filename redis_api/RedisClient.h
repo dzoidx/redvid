@@ -16,6 +16,7 @@ public:
     RedisVersion get_version();
     Info info();
     bool select(int db_index);
+    std::vector<std::string> keys(const char* pattern);
 private:
     RedisVersion version_;
     std::string host_;

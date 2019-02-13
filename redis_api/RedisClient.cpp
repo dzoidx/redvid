@@ -49,6 +49,30 @@ bool RedisClient::select(int db_index)
     return false;
 }
 
+std::vector<std::string> RedisClient::keys(const char* pattern)
+{
+    std::vector<std::string> result;
+    auto e = Encoder();
+    e.write_array(2);
+    e.write_bulk_string("keys", 4);
+    e.write_bulk_string(pattern, strlen(pattern));
+    auto resp = request(e, host_.c_str(), port_);
+    auto r = resp.c_str();
+    auto d = Decoder(r);
+    if(d.peek_next() == DataType::Array)
+    {
+        auto array_size = d.read_array_size();
+        for(auto i = 0; i < array_size; ++i)
+        {
+            int sz;
+            auto key = d.read_bulk_string(sz);
+            auto key_str = std::string(key.get(), sz);
+            result.push_back(key_str);
+        }
+    }
+    return result;
+}
+
 std::string request(Encoder& encoded_data, const char* host, int port)
 {
     auto data = encoded_data.to_string();
